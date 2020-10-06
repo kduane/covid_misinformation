@@ -19,16 +19,9 @@ df['label'] = df['label'].map({'true' : 0,'false' : 1,'misleading' : 1})
 X = df['text']
 y = df['label']
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify = y, random_state = 42)
-estimator = []
-estimator.append(('gs_bag', BaggingClassifier()))
-estimator.append(('mnnb', MultinomialNB(alpha = 0.1)))
-estimator.append(('lrcv', LogisticRegressionCV(penalty = 'l2', solver = 'liblinear')))
-estimator.append(('rfc', RandomForestClassifier(bootstrap = True, max_depth = 50, min_samples_leaf = 2, min_samples_split = 5)))
+
 cvec = CountVectorizer(min_df = 2, max_features = 5000, ngram_range = (1,2), stop_words= None)
-Z_train = cvec.fit_transform(X_train)
-Z_test = cvec.transform(X_test)
-vote = VotingClassifier(estimators = estimator, voting = 'soft')
-vote.fit(Z_train, y_train)
+cvec.fit(X_train)
 
 @app.route('/')
 
@@ -52,7 +45,7 @@ def submit():
     print(X_test)
     r_dict = {
         0 : "likely valid.",
-        1 : "likely misinformations."
+        1 : "likely misinformation."
     }
     model = pickle.load(open('assets/model.p', 'rb'))
     pred = model.predict(X_test) # 0 or 1
